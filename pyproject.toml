@@ -1,0 +1,12 @@
+[project]
+name = "gpu-reservation-2"
+version = "0.1.0"
+description = "研究室向け GPU リソースの可視化・予約バックエンド"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.122.0",
+    "pydantic-settings>=2.12.0",
+    "sqlmodel>=0.0.27",
+    "uvicorn[standard]>=0.38.0",
+]
