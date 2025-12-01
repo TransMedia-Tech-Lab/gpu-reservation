@@ -1,5 +1,5 @@
 [project]
-name = "gpu-reservation-2"
+name = "gpu-reservation"
 version = "0.1.0"
 description = "研究室向け GPU リソースの可視化・予約バックエンド"
 readme = "README.md"

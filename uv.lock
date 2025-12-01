@@ -69,7 +69,7 @@ wheels = [
 ]
 
 [[package]]
-name = "gpu-reservation-2"
+name = "gpu-reservation"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

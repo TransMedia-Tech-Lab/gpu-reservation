@@ -35,17 +35,31 @@ const ReservationForm = ({ onReservationCreated }) => {
         });
     };
 
+    const toIsoString = (value) => {
+        // datetime-local はタイムゾーン情報を含まないので、ローカル時刻として解釈し UTC ISO に変換する
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? null : date.toISOString();
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         setSuccess(null);
 
+        const startIso = toIsoString(formData.start_time);
+        const endIso = toIsoString(formData.end_time);
+
+        if (!startIso || !endIso) {
+            setError('日時の形式が不正です');
+            return;
+        }
+
         try {
-            // Ensure dates are ISO strings with timezone if possible, or just send as is if backend handles it.
-            // Backend expects ISO format.
             await createReservation({
                 ...formData,
                 gpu_id: parseInt(formData.gpu_id),
+                start_time: startIso,
+                end_time: endIso,
             });
             setSuccess('予約を作成しました！');
             setFormData({
