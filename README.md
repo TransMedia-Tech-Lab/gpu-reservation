@@ -3,10 +3,8 @@
 研究室のGPUリソースを可視化し、日時指定の予約を管理するフルスタック構成です。バックエンドは FastAPI + SQLModel、フロントエンドは React + Vite で動作し、REST API を通じて連携します。現在の前提ハードウェアは **RTX 5090 32GB を1台 (lab-node-1/GPU0)** のみです。
 
 ## リポジトリ構成
-- `backend/`: FastAPI アプリ、DB、設定。
-- `frontend/`: React + Vite のフロントエンド。
-- `pyproject.toml`, `uv.lock`: Python 依存管理 (uv)。
-- `package.json` (frontend): Node 依存管理。
+- `backend/`: FastAPI アプリ、DB、設定。`pyproject.toml`/`uv.lock`/`.python-version` もここに配置し、`.venv` は `backend/.venv` に作成します。
+- `frontend/`: React + Vite のフロントエンド (`package.json` を同梱)。
 
 ---
 
@@ -33,12 +31,12 @@
 - Reservation: `id`, `gpu_id`, `user`, `purpose`, `start_time`, `end_time`, `status`, `created_at`
 
 ### セットアップ (Backend)
-1. 前提: uv がインストールされていること。`cd /Users/yuhei/Desktop/Develop/gpu-reservation`
-2. 依存関係と仮想環境の同期: `uv sync`
+1. 前提: uv がインストールされていること。`cd /Users/yuhei/Desktop/Develop/gpu-reservation/backend`
+2. 依存関係と仮想環境の同期: `uv sync` （`backend/.venv` が作成されます）
 3. 開発サーバー起動:
-   - ホットリロード付き: `uv run uvicorn backend.app.main:app --reload --port 8000`
-   - 簡易エントリーポイント: `uv run python -m backend.main`
-4. サンプルデータ投入 (任意): `uv run python -m backend.app.seed`
+   - ホットリロード付き: `uv run uvicorn app.main:app --reload --port 8000`
+   - 簡易エントリーポイント: `uv run python -m main`
+4. サンプルデータ投入 (任意): `uv run python -m app.seed`
 5. ブラウザで確認: `http://localhost:8000/docs` (Swagger UI) または `http://localhost:8000/redoc`
 
 ### 設定の変更
@@ -112,6 +110,6 @@ curl "http://localhost:8000/api/availability?start=2025-01-20T12:00:00Z&end=2025
 
 ## 運用メモ
 - CORS はデフォルト許可 (`cors_origins=["*"]`)。必要に応じて `backend/app/config.py` または `.env` で絞り込んでください。
-- DB は `backend/data/gpu_reservations.db` に作成されます。リセットしたい場合はファイルを削除し、必要なら `backend.app.seed` を再実行してください。
+- DB は `backend/data/gpu_reservations.db` に作成されます。リセットしたい場合はファイルを削除し、必要なら `app.seed` を再実行してください（`cd backend && uv run python -m app.seed`）。
 - 追加依存: バックエンドは `uv add パッケージ名`、フロントエンドは `npm install パッケージ名 && npm run lint` を推奨。
 - フロントエンドは `/api` を前提にしているため、バックエンドは同一ホスト/ポート (プロキシ先) で起動してください。
