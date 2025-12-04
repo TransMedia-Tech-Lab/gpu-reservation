@@ -81,7 +81,7 @@ const ReservationForm = ({ onReservationCreated }) => {
             {success && <div className="success">{success}</div>}
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label>GPU:</label>
+                    <label>GPU</label>
                     <select name="gpu_id" value={formData.gpu_id} onChange={handleChange} required>
                         {gpus.map(item => (
                             <option key={item.gpu.id} value={item.gpu.id}>{item.gpu.name} ({item.gpu.model})</option>
@@ -89,19 +89,24 @@ const ReservationForm = ({ onReservationCreated }) => {
                     </select>
                 </div>
                 <div className="form-group">
-                    <label>ユーザー:</label>
-                    <input type="text" name="user" value={formData.user} onChange={handleChange} required />
+                    <label>ユーザー</label>
+                    <select name="user" value={formData.user} onChange={handleChange} required>
+                        <option value="">ユーザーを選択してください</option>
+                        {["中西 崇史", "峰松 彩子", "程凡", "合田 竜之佑", "山田 祐平", "渡部 拓海", "菊池 あかね", "田辺 義晴", "村山 奏人", "井田 雄大", "大竹 陸", "小川 輝", "加藤 優貴", "草原 悠貴", "栗原 怜男", "庄山 海斗", "白葉 咲太郎", "堀内 祥吾", "厳 森浩", "徐 政佑", "秋山 知輝", "木村 翔竜", "杉本 拓海"].map(user => (
+                            <option key={user} value={user}>{user}</option>
+                        ))}
+                    </select>
                 </div>
                 <div className="form-group">
-                    <label>目的:</label>
+                    <label>目的</label>
                     <input type="text" name="purpose" value={formData.purpose} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                    <label>開始日時:</label>
+                    <label>開始日時</label>
                     <input type="datetime-local" name="start_time" value={formData.start_time} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                    <label>終了日時:</label>
+                    <label>終了日時</label>
                     <input type="datetime-local" name="end_time" value={formData.end_time} onChange={handleChange} required />
                 </div>
                 <button type="submit">予約する</button>
