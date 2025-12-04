@@ -1,6 +1,7 @@
 services:
   - type: web
     name: gpu-reservation-backend
+    rootDir: backend
     env: python
     buildCommand: |
       pip install uv
