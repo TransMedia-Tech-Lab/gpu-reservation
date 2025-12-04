@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export const fetchGPUs = async () => {
     const response = await fetch(`${API_BASE}/gpus`);

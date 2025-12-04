@@ -113,3 +113,37 @@ curl "http://localhost:8000/api/availability?start=2025-01-20T12:00:00Z&end=2025
 - DB は `backend/data/gpu_reservations.db` に作成されます。リセットしたい場合はファイルを削除し、必要なら `app.seed` を再実行してください（`cd backend && uv run python -m app.seed`）。
 - 追加依存: バックエンドは `uv add パッケージ名`、フロントエンドは `npm install パッケージ名 && npm run lint` を推奨。
 - フロントエンドは `/api` を前提にしているため、バックエンドは同一ホスト/ポート (プロキシ先) で起動してください。
+
+---
+
+## デプロイ (無料構成)
+
+本プロジェクトは以下の構成で無料デプロイが可能です。
+
+- **Frontend**: Cloudflare Pages
+- **Backend**: Render.com (Web Service)
+- **Database**: Supabase (PostgreSQL)
+
+### 手順概要
+
+詳細な手順は `walkthrough.md` を参照してください。
+
+1.  **Supabase**: プロジェクトを作成し、`DATABASE_URL` を取得。
+2.  **Render (Backend)**:
+    - GitHub リポジトリを連携。
+    - Build Command: `pip install uv && uv sync --frozen`
+    - Start Command: `uv run main.py`
+    - Environment Variables:
+        - `DATABASE_URL`: Supabase の接続文字列
+        - `PYTHON_VERSION`: `3.12.0`
+3.  **Cloudflare Pages (Frontend)**:
+    - GitHub リポジトリを連携。
+    - Build command: `npm run build`
+    - Build output directory: `dist`
+    - Root directory: `frontend`
+    - Environment variables:
+        - `VITE_API_URL`: Render のバックエンド URL (例: `https://gpu-reservation.onrender.com`)
+
+### 変更点
+- **ユーザー選択**: 予約フォームのユーザー入力は、事前に定義されたリストからの選択式に変更されました。
+- **DB対応**: バックエンドは `psycopg2-binary` を含み、PostgreSQL に対応しています。
