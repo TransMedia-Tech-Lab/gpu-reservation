@@ -27,3 +27,8 @@ app.include_router(router, prefix=settings.api_prefix)
 @app.on_event("startup")
 def on_startup() -> None:
     init_db()
+
+
+@app.get("/")
+def health_check():
+    return {"status": "ok", "message": "GPU Reservation Backend is running"}
