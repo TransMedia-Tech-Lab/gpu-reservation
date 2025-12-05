@@ -6,7 +6,7 @@ services:
     buildCommand: |
       pip install uv
       uv sync --frozen
-    startCommand: uv run main.py
+    startCommand: uv run python -m app.seed && uv run main.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
