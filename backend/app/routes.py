@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlmodel import Session, select
 
 from .config import Settings, get_settings
@@ -30,6 +30,33 @@ from .services import (
 )
 
 router = APIRouter()
+
+
+def _find_reservations(
+    session: Session,
+    settings: Settings,
+    start: Optional[datetime],
+    end: Optional[datetime],
+    gpu_id: Optional[int],
+) -> list[ReservationRead]:
+    """期間と GPU で絞り込んだ予約を開始時刻順に返す。"""
+    statement = select(Reservation)
+    if gpu_id is not None:
+        statement = statement.where(Reservation.gpu_id == gpu_id)
+
+    if start and end:
+        start_utc, end_utc = normalize_window(start, end, settings)
+        statement = statement.where(Reservation.start_time < end_utc, Reservation.end_time > start_utc)
+    elif start:
+        start_utc = to_utc(start, settings)
+        statement = statement.where(Reservation.end_time >= start_utc)
+    elif end:
+        end_utc = to_utc(end, settings)
+        statement = statement.where(Reservation.start_time <= end_utc)
+
+    statement = statement.order_by(Reservation.start_time)
+    reservations = session.exec(statement).all()
+    return [ReservationRead.model_validate(r) for r in reservations]
 
 
 @router.get("/health")
@@ -73,9 +100,7 @@ def update_gpu(
     payload: GPUUpdate,
     session: Session = Depends(get_session),
 ) -> GPURead:
-    gpu = session.get(GPU, gpu_id)
-    if not gpu:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="GPU が見つかりません。")
+    gpu = get_gpu_or_404(session, gpu_id)
 
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(gpu, field, value)
@@ -95,22 +120,7 @@ def list_gpu_reservations(
     settings: Settings = Depends(get_settings),
 ) -> list[ReservationRead]:
     get_gpu_or_404(session, gpu_id)
-
-    statement = select(Reservation).where(Reservation.gpu_id == gpu_id)
-
-    if start and end:
-        start_utc, end_utc = normalize_window(start, end, settings)
-        statement = statement.where(Reservation.start_time < end_utc, Reservation.end_time > start_utc)
-    elif start:
-        start_utc = to_utc(start, settings)
-        statement = statement.where(Reservation.end_time >= start_utc)
-    elif end:
-        end_utc = to_utc(end, settings)
-        statement = statement.where(Reservation.start_time <= end_utc)
-
-    statement = statement.order_by(Reservation.start_time)
-    reservations = session.exec(statement).all()
-    return [ReservationRead.model_validate(r) for r in reservations]
+    return _find_reservations(session, settings, start, end, gpu_id)
 
 
 @router.get("/reservations", response_model=list[ReservationRead])
@@ -121,25 +131,9 @@ def list_reservations(
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings),
 ) -> list[ReservationRead]:
-    statement = select(Reservation)
-
     if gpu_id is not None:
         get_gpu_or_404(session, gpu_id)
-        statement = statement.where(Reservation.gpu_id == gpu_id)
-
-    if start and end:
-        start_utc, end_utc = normalize_window(start, end, settings)
-        statement = statement.where(Reservation.start_time < end_utc, Reservation.end_time > start_utc)
-    elif start:
-        start_utc = to_utc(start, settings)
-        statement = statement.where(Reservation.end_time >= start_utc)
-    elif end:
-        end_utc = to_utc(end, settings)
-        statement = statement.where(Reservation.start_time <= end_utc)
-
-    statement = statement.order_by(Reservation.start_time)
-    reservations = session.exec(statement).all()
-    return [ReservationRead.model_validate(r) for r in reservations]
+    return _find_reservations(session, settings, start, end, gpu_id)
 
 
 @router.post("/reservations", response_model=ReservationRead, status_code=status.HTTP_201_CREATED)
